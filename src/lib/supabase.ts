@@ -21,7 +21,8 @@ const publishableKey = import.meta.env.VITE_SUPABASE_ANON_KEY ?? "";
 const sessionKey = "nexora.supabase.session.v1";
 const recoveryKey = "nexora.supabase.password-recovery.v1";
 
-export const supabaseConfigured = Boolean(supabaseUrl && publishableKey);
+const localDemoMode = import.meta.env.DEV && import.meta.env.VITE_DEMO_MODE === "true";
+export const supabaseConfigured = !localDemoMode && Boolean(supabaseUrl && publishableKey);
 
 function requireConfiguration() {
   if (!supabaseConfigured) {

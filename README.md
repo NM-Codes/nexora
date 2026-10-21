@@ -11,6 +11,8 @@ npm run dev
 
 Without Supabase settings, Nexora runs in a browser-local demo mode with one platform administrator and one customer workspace. Sign in as `namn@admin.se` for the administrator view or `namn@kund.se` for the customer view. The demo accepts any password and stores demo changes in that browser only. Do not use demo mode for real candidate data.
 
+To open the local demo explicitly even when `.env.local` contains Supabase settings, run `npm run dev:demo`. Use `npm run dev` for the connected Supabase app.
+
 The sample customer is **Nexora**, the fictional recruiting company used by this demo. Candidate profiles, job records, and work histories are sample data; work histories do not name real employers. The `.se` addresses above are local demo identities. For a connected Supabase project, use email addresses whose inboxes you control so account confirmation and password recovery can reach the users.
 
 ## Connect Supabase

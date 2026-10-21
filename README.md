@@ -26,9 +26,9 @@ npm run dev
 
 Without Supabase environment variables, the app uses browser-local demo data. Sign in with:
 
-- ** Administrator:** admin
-- ** Customer:** kund
-- ** Password for both:** demo
+- **Administrator:** admin
+- **Customer:** kund
+- **Password for both:** demo
 
 Customer: kund
 

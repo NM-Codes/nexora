@@ -30,9 +30,6 @@ Without Supabase environment variables, the app uses browser-local demo data. Si
 - **Customer:** kund
 - **Password for both:** demo
 
-Customer: kund
-
-Password for both: demo
 
 Changes stay in that browser. Do not use this mode for real candidate data.
 

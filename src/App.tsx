@@ -1382,7 +1382,7 @@ function LoginPage({
   return (
     <main className="login-page">
       <section className="login-brand-panel">
-        <div className="login-brand"><img src="/brand/nexora-favicon.svg" alt="" /><span>NEXORA</span><small>BÄTTRE TALANGER. STARKARE TEAM.</small></div>
+        <div className="login-brand"><img src={`${import.meta.env.BASE_URL}brand/nexora-favicon.svg`} alt="" /><span>NEXORA</span><small>BÄTTRE TALANGER. STARKARE TEAM.</small></div>
         <div className="login-pitch"><span className="eyebrow">Nexora · Ditt rekryteringsverktyg</span><h1>Rätt kandidat.<br /><span>Nästa steg.</span></h1><p>Alla kandidater och jobb på en plats. Mer tid för människor, mindre tid för administration.</p><div className="login-mini-board"><div className="mini-board-top"><strong>Kandidater</strong><span>15 totalt</span></div><div className="mini-board-cards"><div><span>Ny</span><strong>Elin Andersson</strong><small>Frontendutvecklare</small></div><div><span>Granskning</span><strong>Erik Johansson</strong><small>Frontendutvecklare</small></div><div><span>Intervju</span><strong>Oscar Nilsson</strong><small>UX-designer</small></div></div></div><span className="login-tagline">BETTER TALENT. FASTER.</span></div>
       </section>
       <section className="login-form-panel">

@@ -1394,7 +1394,6 @@ function LoginPage({
             <button className="button button-primary" type="button" onClick={() => onDemoLogin("admin")}>Admin <Icon name="arrow-right" size={18} /></button>
             <button className="button button-secondary" type="button" onClick={() => onDemoLogin("customer")}>Kund <Icon name="arrow-right" size={18} /></button>
           </div>}
-          {demoMode && mode === "login" && <p className="demo-login-divider">Eller logga in manuellt</p>}
           <form className="stacked-form" onSubmit={submit}>
             {mode === "signup" && <label className="field"><span>Namn</span><input className="input-control" type="text" name="name" placeholder="För- och efternamn" autoComplete="name" required /></label>}
             {mode !== "update" && <label className="field"><span>{demoMode && mode === "login" ? "Demoanvändare" : "E-post"}</span><input className="input-control" type={demoMode && mode === "login" ? "text" : "email"} name="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder={demoMode && mode === "login" ? "admin eller kund" : "namn@foretag.se"} autoComplete={demoMode && mode === "login" ? "username" : "email"} required /></label>}
@@ -1404,7 +1403,7 @@ function LoginPage({
             {notice && <p className="auth-message auth-message-success" role="status">{notice}</p>}
             <button className="button button-primary button-wide" type="submit" disabled={busy}>{busy ? "Vänta…" : mode === "reset" ? "Skicka återställningslänk" : mode === "update" ? "Spara nytt lösenord" : demoMode ? "Logga in" : title}<Icon name="arrow-right" size={18} /></button>
           </form>
-          {demoMode && mode === "login" && <p className="login-demo-note"><Icon name="shield" size={16} /><span>Granskarinloggning: <strong>admin</strong> eller <strong>kund</strong> med lösenordet <strong>demo</strong>. Bara fiktiva data används; ändringar sparas i din webbläsare.</span></p>}
+          {demoMode && mode === "login" && <p className="login-demo-note"><Icon name="shield" size={16} /><span>Granskar inloggning: <strong>admin</strong> eller <strong>kund</strong> via knapparna ovan. <br />Bara fiktiva data används; ändringar sparas i din webbläsare.</span></p>}
           {!demoMode && <div className="login-account-prompt">
             {mode === "login" ? <><p>Ny på Nexora? Din administratör lägger till din e-postadress i Administration. Skapa sedan ditt konto här.</p><button className="button button-secondary button-wide" type="button" onClick={() => setMode("signup")}>Skapa konto <Icon name="arrow-right" size={18} /></button></> : mode === "update" ? <p className="muted">Efter sparat lösenord öppnas din arbetsyta.</p> : <><p>{mode === "signup" ? "Har du redan ett konto? Logga in med din e-postadress och ditt lösenord." : "Kom du på ditt lösenord?"}</p><button className="text-button" type="button" onClick={() => setMode("login")}>Till inloggningen</button></>}
           </div>}

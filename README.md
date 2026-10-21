@@ -30,6 +30,7 @@ Without Supabase environment variables, the app uses browser-local demo data. Si
 - **Customer:** Kund button
 
 
+
 Changes stay in that browser. Do not use this mode for real candidate data.
 
 To force local demo mode even when .env.local contains Supabase settings:

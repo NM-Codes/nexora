@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 350" role="img" aria-labelledby="title description">
+  <title id="title">Nexora</title>
+  <desc id="description">Nexora-logotyp med symbol och mottot Better Talent. Faster.</desc>
+
+  <g transform="translate(174 6)">
+    <path fill="#7C8CA3" d="M96 50c6-2 13 1 18 7l-45 80c-3 6-9 10-17 10H12c-8 0-11-6-6-12l68-78c6-6 14-9 22-7Z"/>
+    <path fill="#1A2433" d="M115 7c8-8 20-7 27 3l91 121c6 8 2 16-7 16h-34c-7 0-12-3-17-10l-64-83c-5-6-10-7-15-4l19-43Z"/>
+    <circle cx="217" cy="29" r="29" fill="#7C8CA3"/>
+  </g>
+
+  <text x="300" y="250" text-anchor="middle" textLength="560" lengthAdjust="spacing" fill="#1A2433" font-family="Montserrat, 'Avenir Next', 'Segoe UI', sans-serif" font-size="82" font-weight="500">NEXORA</text>
+  <text x="300" y="317" text-anchor="middle" textLength="430" lengthAdjust="spacing" fill="#526580" font-family="Montserrat, 'Avenir Next', 'Segoe UI', sans-serif" font-size="25" font-weight="400">BETTER TALENT. FASTER.</text>
+</svg>

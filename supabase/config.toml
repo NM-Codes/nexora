@@ -1,0 +1,4 @@
+project_id = "nexora"
+
+[functions.assess-cv]
+verify_jwt = true

@@ -11,7 +11,7 @@ All people, work histories, jobs, and employer names in the demo are fictional. 
 - **Jobs and candidates:** create jobs, add candidate profiles and LinkedIn URLs, and attach a private PDF or Word CV (up to 5 MB).
 - **Recruitment pipeline:** compact five-stage Kanban and list views, candidate name and job filters, candidate profiles, and stage updates.
 - **Tenant isolation:** Supabase Row Level Security scopes customer data and private CV files by organization.
-- **Optional CV assistant:** with explicit consent, it produces an advisory summary, evidence, questions to clarify, and interview prompts. It does not score, rank, or recommend hiring decisions.
+- **Optional CV assistant:** the UI asks the user to confirm before sending pasted CV text for an advisory summary, evidence, questions to clarify, and interview prompts. The current consent check is client-side only; see [Security](docs/security.md) before using the assistant with real CVs. It does not score, rank, or recommend hiring decisions.
 
 The frontend and Supabase Edge Function are implemented in this repository. A public production deployment is not configured here. Live Supabase accounts need to register from an inbox they control, and the optional CV assistant needs an OpenAI API key and a deployed Edge Function.
 
@@ -46,7 +46,7 @@ For the schema and trust boundaries, see [`docs/architecture.md`](docs/architect
 
 ## Optional CV assistant
 
-The CV assistant sends pasted CV text to OpenAI only after the user checks the consent box and starts the review. Raw CV text is not stored by the function; the generated advisory result is saved with the candidate's application. A person must verify every statement and make all hiring decisions.
+The UI requires the user to check a consent box before starting a review. This is not currently enforced or recorded by the Edge Function, so do not treat it as a production consent record. The function sends pasted CV text to OpenAI, does not intentionally store the raw text, and saves the generated advisory result with the candidate's application. A person must verify every statement and make all hiring decisions. See [AI CV review](docs/ai-cv-review.md) and [Security](docs/security.md).
 
 Deploy and configure the Supabase Edge Function:
 
@@ -64,3 +64,14 @@ npm run build
 ```
 
 Vite writes the production assets to `dist/`. A hosting provider must serve that directory and rewrite client-side routes to `index.html`.
+
+## Documentation
+
+- [Documentation index](docs/README.md)
+- [Product requirements and user stories](docs/product-requirements.md)
+- [Architecture](docs/architecture.md)
+- [Security](docs/security.md)
+- [Data handling](docs/data-handling.md)
+- [AI CV review](docs/ai-cv-review.md)
+- [Development guide](docs/development.md)
+- [Deployment guide](docs/deployment.md)

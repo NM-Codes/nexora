@@ -33,7 +33,7 @@ Composite foreign keys ensure the candidate and job on an application belong to 
 
 ## AI review
 
-The optional assistant summarizes text supplied by the user, identifies role-related evidence and missing information, and proposes interview questions. It must not infer protected attributes, rank candidates, or recommend hiring decisions. The UI requires explicit consent before sending pasted CV text to the configured OpenAI model. Raw CV text is not persisted; the advisory result is stored with its application for later review.
+The optional assistant summarizes text supplied by the user, identifies role-related evidence and missing information, and proposes interview questions. It must not infer protected attributes, rank candidates, or recommend hiring decisions. The UI asks the user to confirm before sending pasted CV text to the configured OpenAI model, but the Edge Function currently neither validates nor records that consent. Raw CV text is not intentionally persisted by the function; the advisory result is stored with its application for later review. See [AI CV review](ai-cv-review.md) and [Security](security.md) for current safeguards and production gaps.
 
 ## Local mode
 

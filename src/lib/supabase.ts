@@ -21,10 +21,13 @@ const publishableKey = import.meta.env.VITE_SUPABASE_ANON_KEY ?? "";
 const sessionKey = "nexora.supabase.session.v1";
 const recoveryKey = "nexora.supabase.password-recovery.v1";
 
-const localDemoMode = import.meta.env.DEV && import.meta.env.VITE_DEMO_MODE === "true";
-export const supabaseConfigured = !localDemoMode && Boolean(supabaseUrl && publishableKey);
+const hasSupabaseConfig = Boolean(supabaseUrl && publishableKey);
+export const demoMode = import.meta.env.VITE_DEMO_MODE === "true"
+  || (import.meta.env.DEV && !hasSupabaseConfig);
+export const supabaseConfigured = !demoMode && hasSupabaseConfig;
 
 function requireConfiguration() {
+  if (demoMode) throw new Error("Supabase är avstängt i demoläget.");
   if (!supabaseConfigured) {
     throw new Error("Supabase är inte konfigurerat. Lägg till URL och anon-nyckel i .env.local.");
   }
@@ -140,7 +143,7 @@ export async function signUp(fullName: string, email: string, password: string) 
 }
 
 export async function sendPasswordReset(email: string) {
-  await authRequest("recover", { email, redirect_to: `${window.location.origin}/inloggning` });
+  await authRequest("recover", { email, redirect_to: `${window.location.origin}${import.meta.env.BASE_URL}inloggning` });
 }
 
 export async function updatePassword(password: string) {

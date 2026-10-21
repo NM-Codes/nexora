@@ -13,6 +13,7 @@ import {
   signUp,
   signedCandidateFileUrl,
   selectRows,
+  demoMode,
   supabaseConfigured,
   updateRow,
   updatePassword,
@@ -198,8 +199,8 @@ const initialOrganizations: WorkspaceOrganization[] = [
 ];
 
 const initialAccounts: Account[] = [
-  { id: "admin-demo", name: "Admin Nexora", email: "namn@admin.se", role: "Administratör", organizationId: null, active: true },
-  { id: "customer-demo", name: "Kund Nexora", email: "namn@kund.se", role: "Kund", organizationId: "nexora", active: true },
+  { id: "admin-demo", name: "Admin Nexora", email: "admin", role: "Administratör", organizationId: null, active: true },
+  { id: "customer-demo", name: "Kund Nexora", email: "kund", role: "Kund", organizationId: "nexora", active: true },
 ];
 
 function readStored<T>(key: string, fallback: T): T {
@@ -215,16 +216,26 @@ function readDemoUser(): SignedInUser | null {
   try {
     const saved = window.localStorage.getItem("nexora.demo-user.v2")
       ?? window.sessionStorage.getItem("nexora.demo-user.v2");
-    return saved ? JSON.parse(saved) as SignedInUser : null;
+    if (!saved) return null;
+    const stored = JSON.parse(saved) as Partial<SignedInUser>;
+    const account = initialAccounts.find((item) => item.id === stored.id);
+    if (!account) return null;
+    return {
+      id: account.id,
+      email: account.email,
+      name: account.name,
+      role: account.role,
+      organizationId: account.organizationId,
+    };
   } catch {
     return null;
   }
 }
 
 function useStoredState<T>(key: string, fallback: T) {
-  const [value, setValue] = useState<T>(() => supabaseConfigured ? fallback : readStored(key, fallback));
+  const [value, setValue] = useState<T>(() => demoMode ? readStored(key, fallback) : fallback);
   useEffect(() => {
-    if (supabaseConfigured) return;
+    if (!demoMode) return;
     try {
       window.localStorage.setItem(key, JSON.stringify(value));
     } catch {
@@ -272,33 +283,56 @@ function displayRole(role: AppProfile["role"]): "Kund" | "Administratör" {
   return role === "admin" ? "Administratör" : "Kund";
 }
 
+function applicationPathFromLocation() {
+  const githubPagesPath = new URLSearchParams(window.location.search).get("p");
+  if (githubPagesPath) {
+    const route = githubPagesPath.split(/[?#]/, 1)[0] || "/";
+    const safeRoute = route.startsWith("/") ? route : `/${route}`;
+    const base = import.meta.env.BASE_URL;
+    const url = base === "/" ? safeRoute : `${base}${safeRoute.replace(/^\/+/, "")}`;
+    window.history.replaceState({}, "", url);
+    return safeRoute;
+  }
+
+  const base = import.meta.env.BASE_URL;
+  if (base !== "/" && window.location.pathname.startsWith(base)) {
+    return `/${window.location.pathname.slice(base.length)}` || "/";
+  }
+  return window.location.pathname || "/";
+}
+
+function applicationPathUrl(path: string) {
+  const base = import.meta.env.BASE_URL;
+  return base === "/" ? path : `${base}${path.replace(/^\/+/, "")}`;
+}
+
 function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Något gick fel. Försök igen.";
 }
 
 function App() {
-  const [path, setPath] = useState(() => window.location.pathname);
+  const [path, setPath] = useState(applicationPathFromLocation);
   const [candidates, setCandidates] = useStoredState("nexora.candidates.v2", initialCandidates);
   const [jobs, setJobs] = useStoredState("nexora.jobs.v2", initialJobs);
   const [organizations, setOrganizations] = useStoredState("nexora.organizations.v2", initialOrganizations);
-  const [accounts, setAccounts] = useStoredState("nexora.accounts.v2", initialAccounts);
+  const [accounts, setAccounts] = useStoredState("nexora.accounts.v3", initialAccounts);
   const [organizationId, setOrganizationId] = useStoredState("nexora.active-organization.v2", "nexora");
-  const [currentUser, setCurrentUser] = useState<SignedInUser | null>(() => supabaseConfigured ? null : readDemoUser());
-  const [authReady, setAuthReady] = useState(!supabaseConfigured);
+  const [currentUser, setCurrentUser] = useState<SignedInUser | null>(() => demoMode ? readDemoUser() : null);
+  const [authReady, setAuthReady] = useState(demoMode || !supabaseConfigured);
   const [authError, setAuthError] = useState("");
   const [authNotice, setAuthNotice] = useState("");
   const [toast, setToast] = useState("");
 
   useEffect(() => {
     function syncPath() {
-      setPath(window.location.pathname);
+      setPath(applicationPathFromLocation());
     }
     window.addEventListener("popstate", syncPath);
     return () => window.removeEventListener("popstate", syncPath);
   }, []);
 
   useEffect(() => {
-    if (!supabaseConfigured) return;
+    if (demoMode || !supabaseConfigured) return;
     let active = true;
     restoreProfile()
       .then(async (restored) => {
@@ -323,7 +357,8 @@ function App() {
   }, [toast]);
 
   function navigate(nextPath: string) {
-    if (window.location.pathname !== nextPath) window.history.pushState({}, "", nextPath);
+    const url = applicationPathUrl(nextPath);
+    if (window.location.pathname !== url) window.history.pushState({}, "", url);
     setPath(nextPath);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -411,22 +446,34 @@ function App() {
     }
   }
 
+  function handleDemoLogin(role: "admin" | "customer") {
+    if (!demoMode) return;
+    const account = initialAccounts.find((item) => item.id === (role === "admin" ? "admin-demo" : "customer-demo"));
+    if (!account) return;
+    const user: SignedInUser = { id: account.id, email: account.email, name: account.name, role: account.role, organizationId: account.organizationId };
+    setAuthError("");
+    setAuthNotice("");
+    setCurrentUser(user);
+    window.localStorage.setItem("nexora.demo-user.v2", JSON.stringify(user));
+    window.sessionStorage.removeItem("nexora.demo-user.v2");
+    if (user.role === "Kund" && user.organizationId) setOrganizationId(user.organizationId);
+    navigate("/");
+  }
+
   async function handleLogin(email: string, password: string, remember = true) {
     setAuthError("");
     setAuthNotice("");
-    if (!supabaseConfigured) {
-      const account = accounts.find((item) => item.email.toLowerCase() === email.trim().toLowerCase() && item.active);
-      if (!account) throw new Error("Ingen aktiv demoinbjudan hittades för den e-postadressen.");
-      const user: SignedInUser = { id: account.id, email: account.email, name: account.name, role: account.role, organizationId: account.organizationId };
-      setCurrentUser(user);
-      const storage = remember ? window.localStorage : window.sessionStorage;
-      const otherStorage = remember ? window.sessionStorage : window.localStorage;
-      storage.setItem("nexora.demo-user.v2", JSON.stringify(user));
-      otherStorage.removeItem("nexora.demo-user.v2");
-      if (user.role === "Kund" && user.organizationId) setOrganizationId(user.organizationId);
-      navigate("/");
+    if (demoMode) {
+      const username = email.trim().toLowerCase();
+      if (password !== "demo" || (username !== "admin" && username !== "kund")) {
+        const message = "Ange admin eller kund och lösenordet demo, eller välj en av demoknapparna.";
+        setAuthError(message);
+        throw new Error(message);
+      }
+      handleDemoLogin(username === "admin" ? "admin" : "customer");
       return;
     }
+    if (!supabaseConfigured) throw new Error("Supabase måste konfigureras innan inloggning kan användas.");
 
     try {
       await signIn(email, password, remember);
@@ -445,12 +492,7 @@ function App() {
   async function handleSignup(fullName: string, email: string, password: string) {
     setAuthError("");
     setAuthNotice("");
-    if (!supabaseConfigured) {
-      const invite = accounts.find((item) => item.email.toLowerCase() === email.trim().toLowerCase() && item.active);
-      if (!invite) throw new Error("Administratören behöver först lägga till din e-postadress under Administration.");
-      await handleLogin(email, password);
-      return;
-    }
+    if (!supabaseConfigured) throw new Error("Kontoregistrering är inte tillgänglig i demoläget.");
 
     try {
       const result = await signUp(fullName.trim(), email.trim(), password);
@@ -472,8 +514,9 @@ function App() {
   async function handleForgotPassword(email: string) {
     setAuthError("");
     if (!supabaseConfigured) {
-      setAuthNotice("Återställning av lösenord är tillgänglig när Supabase är konfigurerat.");
-      return;
+      const message = "Lösenordsåterställning är inte tillgänglig i demoläget.";
+      setAuthError(message);
+      throw new Error(message);
     }
     try {
       await sendPasswordReset(email.trim());
@@ -632,7 +675,7 @@ function App() {
   }
 
   async function reviewCv(candidate: Candidate, cvText: string): Promise<CvAssessment> {
-    if (!supabaseConfigured) throw new Error("AI-bedömning kräver en Supabase-anslutning och OPENAI_API_KEY.");
+    if (demoMode || !supabaseConfigured) throw new Error("AI-bedömning kräver en separat Supabase-anslutning och är avstängd i publik demo.");
     return assessCandidateCv(candidate.id, cvText);
   }
 
@@ -652,6 +695,9 @@ function App() {
     setAccounts((current) => current.map((item) => item.id === account.id ? { ...item, active } : item));
   }
 
+  if (!demoMode && !supabaseConfigured) {
+    return <main className="auth-loading"><section role="alert"><h1>Supabase-konfiguration saknas</h1><p>Den här byggversionen kan inte logga in. Konfigurera Supabase, eller bygg den avsiktliga publikdemo-versionen med <code>npm run build:demo</code>.</p></section></main>;
+  }
   if (!authReady) {
     return <main className="auth-loading" aria-live="polite">Laddar din arbetsyta…</main>;
   }
@@ -661,7 +707,8 @@ function App() {
       onSignUp={handleSignup}
       onForgotPassword={handleForgotPassword}
       onSetPassword={handlePasswordUpdate}
-      configured={supabaseConfigured}
+      demoMode={demoMode}
+      onDemoLogin={handleDemoLogin}
       recoveryMode={supabaseConfigured && passwordRecoveryPending()}
       error={authError}
       notice={authNotice}
@@ -1290,7 +1337,8 @@ function LoginPage({
   onSignUp,
   onForgotPassword,
   onSetPassword,
-  configured,
+  demoMode,
+  onDemoLogin,
   recoveryMode,
   error,
   notice,
@@ -1299,7 +1347,8 @@ function LoginPage({
   onSignUp: (name: string, email: string, password: string) => Promise<void>;
   onForgotPassword: (email: string) => Promise<void>;
   onSetPassword: (password: string) => Promise<void>;
-  configured: boolean;
+  demoMode: boolean;
+  onDemoLogin: (role: "admin" | "customer") => void;
   recoveryMode: boolean;
   error: string;
   notice: string;
@@ -1340,20 +1389,25 @@ function LoginPage({
         <div className="login-form-content">
           <span className="eyebrow">Nexora · Ditt rekryteringsverktyg</span>
           <h2>{title}</h2>
-          <p>{mode === "signup" ? "Skapa ditt konto med den e-postadress din administratör har bjudit in." : mode === "reset" ? "Ange e-postadressen till ditt Nexora-konto så skickar vi en återställningslänk." : mode === "update" ? "Välj ett nytt lösenord för ditt Nexora-konto." : "Välkommen tillbaka. Fortsätt hitta människorna som gör skillnad i ditt team."}</p>
+          <p>{demoMode && mode === "login" ? "Utforska båda rollerna i den interaktiva Nexora-demonstrationen." : mode === "signup" ? "Skapa ditt konto med den e-postadress din administratör har bjudit in." : mode === "reset" ? "Ange e-postadressen till ditt Nexora-konto så skickar vi en återställningslänk." : mode === "update" ? "Välj ett nytt lösenord för ditt Nexora-konto." : "Välkommen tillbaka. Fortsätt hitta människorna som gör skillnad i ditt team."}</p>
+          {demoMode && mode === "login" && <div className="demo-role-actions" aria-label="Välj demovy">
+            <button className="button button-primary" type="button" onClick={() => onDemoLogin("admin")}>Admin <Icon name="arrow-right" size={18} /></button>
+            <button className="button button-secondary" type="button" onClick={() => onDemoLogin("customer")}>Kund <Icon name="arrow-right" size={18} /></button>
+          </div>}
+          {demoMode && mode === "login" && <p className="demo-login-divider">Eller logga in manuellt</p>}
           <form className="stacked-form" onSubmit={submit}>
             {mode === "signup" && <label className="field"><span>Namn</span><input className="input-control" type="text" name="name" placeholder="För- och efternamn" autoComplete="name" required /></label>}
-            {mode !== "update" && <label className="field"><span>E-post</span><input className="input-control" type="email" name="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="namn@foretag.se" autoComplete="email" required /></label>}
+            {mode !== "update" && <label className="field"><span>{demoMode && mode === "login" ? "Demoanvändare" : "E-post"}</span><input className="input-control" type={demoMode && mode === "login" ? "text" : "email"} name="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder={demoMode && mode === "login" ? "admin eller kund" : "namn@foretag.se"} autoComplete={demoMode && mode === "login" ? "username" : "email"} required /></label>}
             {mode !== "reset" && <label className="field"><span>Lösenord</span><span className="login-password-wrap"><input className="input-control" type={showPassword ? "text" : "password"} name="password" placeholder={mode === "update" ? "Nytt lösenord" : "Ange ditt lösenord"} autoComplete={mode === "signup" || mode === "update" ? "new-password" : "current-password"} minLength={mode === "signup" || mode === "update" ? 8 : undefined} required /><button type="button" className="login-password-toggle" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? "Dölj lösenord" : "Visa lösenord"}><Icon name={showPassword ? "eye-off" : "eye"} size={18} /></button></span></label>}
-            {mode === "login" && <div className="login-options"><label><input type="checkbox" checked={rememberMe} onChange={(event) => setRememberMe(event.target.checked)} /><span>Kom ihåg mig</span></label><button className="text-button" type="button" onClick={() => setMode("reset")}>Glömt lösenord?</button></div>}
+            {mode === "login" && !demoMode && <div className="login-options"><label><input type="checkbox" checked={rememberMe} onChange={(event) => setRememberMe(event.target.checked)} /><span>Kom ihåg mig</span></label><button className="text-button" type="button" onClick={() => setMode("reset")}>Glömt lösenord?</button></div>}
             {error && <p className="auth-message auth-message-error" role="alert">{error}</p>}
             {notice && <p className="auth-message auth-message-success" role="status">{notice}</p>}
-            <button className="button button-primary button-wide" type="submit" disabled={busy}>{busy ? "Vänta…" : mode === "reset" ? "Skicka återställningslänk" : mode === "update" ? "Spara nytt lösenord" : title}<Icon name="arrow-right" size={18} /></button>
+            <button className="button button-primary button-wide" type="submit" disabled={busy}>{busy ? "Vänta…" : mode === "reset" ? "Skicka återställningslänk" : mode === "update" ? "Spara nytt lösenord" : demoMode ? "Logga in" : title}<Icon name="arrow-right" size={18} /></button>
           </form>
-          {!configured && <p className="login-demo-note"><Icon name="shield" size={16} />Demoläge: admin <strong>namn@admin.se</strong> eller kund <strong>namn@kund.se</strong>. Valfritt lösenord.</p>}
-          <div className="login-account-prompt">
+          {demoMode && mode === "login" && <p className="login-demo-note"><Icon name="shield" size={16} /><span>Granskarinloggning: <strong>admin</strong> eller <strong>kund</strong> med lösenordet <strong>demo</strong>. Bara fiktiva data används; ändringar sparas i din webbläsare.</span></p>}
+          {!demoMode && <div className="login-account-prompt">
             {mode === "login" ? <><p>Ny på Nexora? Din administratör lägger till din e-postadress i Administration. Skapa sedan ditt konto här.</p><button className="button button-secondary button-wide" type="button" onClick={() => setMode("signup")}>Skapa konto <Icon name="arrow-right" size={18} /></button></> : mode === "update" ? <p className="muted">Efter sparat lösenord öppnas din arbetsyta.</p> : <><p>{mode === "signup" ? "Har du redan ett konto? Logga in med din e-postadress och ditt lösenord." : "Kom du på ditt lösenord?"}</p><button className="text-button" type="button" onClick={() => setMode("login")}>Till inloggningen</button></>}
-          </div>
+          </div>}
         </div>
         <footer>© {new Date().getFullYear()} Nexora <span>Rekrytering med omtanke</span></footer>
       </section>

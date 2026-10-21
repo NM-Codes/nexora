@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="robots" content="noindex" />
+    <title>Nexora</title>
+    <script>
+      const parts = window.location.pathname.split("/").filter(Boolean);
+      const base = parts.length ? `/${parts[0]}/` : "/";
+      const route = `/${parts.slice(1).join("/")}` || "/";
+      const returnTo = route + window.location.search + window.location.hash;
+      window.location.replace(`${base}?p=${encodeURIComponent(returnTo)}`);
+    </script>
+  </head>
+  <body></body>
+</html>

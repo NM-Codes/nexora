@@ -2694,3 +2694,107 @@ textarea.input-control {
     animation-iteration-count: 1 !important;
   }
 }
+
+/* Nexora sidebar toggle fix */
+.app-shell.is-sidebar-collapsed {
+  grid-template-columns: 82px minmax(0, 1fr);
+}
+
+.app-shell.is-sidebar-collapsed .app-sidebar {
+  width: 82px;
+}
+
+.app-shell.is-sidebar-collapsed .brand-lockup {
+  justify-content: center;
+  padding-inline: 10px;
+}
+
+.app-shell.is-sidebar-collapsed .brand-lockup span,
+.app-shell.is-sidebar-collapsed .workspace-picker,
+.app-shell.is-sidebar-collapsed .nav-eyebrow,
+.app-shell.is-sidebar-collapsed .nav-item span,
+.app-shell.is-sidebar-collapsed .nav-item > svg:last-child,
+.app-shell.is-sidebar-collapsed .user-copy,
+.app-shell.is-sidebar-collapsed .user-card .icon-button {
+  display: none;
+}
+
+.app-shell.is-sidebar-collapsed .primary-nav {
+  padding: 10px 8px;
+}
+
+.app-shell.is-sidebar-collapsed .nav-item,
+.app-shell.is-sidebar-collapsed .support-link,
+.app-shell.is-sidebar-collapsed .user-card {
+  justify-content: center;
+  padding-inline: 8px;
+}
+
+.app-shell.is-sidebar-collapsed .support-link {
+  width: calc(100% - 16px);
+  margin-inline: 8px;
+}
+
+.app-shell.is-sidebar-collapsed .user-card {
+  padding: 16px 8px;
+}
+
+@media (min-width: 761px) and (max-width: 1100px) {
+  .app-shell:not(.is-sidebar-collapsed) {
+    grid-template-columns: minmax(270px, 30vw) minmax(0, 1fr);
+  }
+
+  .app-shell:not(.is-sidebar-collapsed) .app-sidebar {
+    width: 100%;
+  }
+
+  .app-shell:not(.is-sidebar-collapsed) .brand-lockup {
+    min-height: 138px;
+    justify-content: flex-start;
+    padding: 22px 24px;
+  }
+
+  .app-shell:not(.is-sidebar-collapsed) .brand-lockup img {
+    width: 56px;
+    height: 56px;
+  }
+
+  .app-shell:not(.is-sidebar-collapsed) .brand-lockup span,
+  .app-shell:not(.is-sidebar-collapsed) .nav-item span,
+  .app-shell:not(.is-sidebar-collapsed) .nav-item > svg:last-child {
+    display: inline;
+  }
+
+  .app-shell:not(.is-sidebar-collapsed) .workspace-picker,
+  .app-shell:not(.is-sidebar-collapsed) .nav-eyebrow {
+    display: block;
+  }
+
+  .app-shell:not(.is-sidebar-collapsed) .user-copy {
+    display: flex;
+  }
+
+  .app-shell:not(.is-sidebar-collapsed) .user-card .icon-button {
+    display: inline-flex;
+  }
+
+  .app-shell.is-sidebar-collapsed {
+    grid-template-columns: 78px minmax(0, 1fr);
+  }
+
+  .app-shell.is-sidebar-collapsed .app-sidebar {
+    width: 78px;
+  }
+}
+
+@media (max-width: 760px) {
+  .app-shell,
+  .app-shell.is-sidebar-collapsed {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+
+  .app-shell .app-sidebar,
+  .app-shell.is-sidebar-collapsed .app-sidebar {
+    width: 64px;
+  }
+}

@@ -48,10 +48,10 @@ export function AppShell({
   }
 
   return (
-    <div className="app-shell">
+    <div className={"app-shell" + (collapsed ? " is-sidebar-collapsed" : "")}>
       <aside className={"app-sidebar" + (collapsed ? " is-collapsed" : "")}>
         <button className="brand-lockup" type="button" onClick={() => go("/")} aria-label="Nexora, gå till kandidater">
-          <img src="/brand/nexora-favicon.svg" alt="" />
+          <img src={`${import.meta.env.BASE_URL}brand/nexora-favicon.svg`} alt="" />
           <span>NEXORA</span>
         </button>
 

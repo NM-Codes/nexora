@@ -263,7 +263,7 @@ function signedInUser(profile: AppProfile): SignedInUser {
     id: profile.id,
     email: profile.email,
     name: profile.full_name || profile.email,
-    role: profile.role === "admin" ? "Administratör" : "Kund",
+    role: displayRole(profile.role),
     organizationId: profile.organization_id,
   };
 }

@@ -1,54 +1,66 @@
 # Nexora — Better talent. Faster.
 
-Nexora is a Swedish-language mini ATS for recruiting teams. It includes a customer workspace, a platform administrator view, job and candidate management, a five-stage candidate board, private CV storage, and an optional advisory CV review.
+Nexora is a Swedish-language mini applicant tracking system (ATS) for a fictional recruiting company. It has separate customer and platform-administrator roles, a candidate Kanban, job management, private CV storage, and an optional AI assistant for CV review.
 
-## Run the demo
+All people, work histories, jobs, and employer names in the demo are fictional. The Nexora workspace represents the sample customer and should not be treated as a real recruiting organization.
+
+## What is included
+
+- **Two roles:** administrators can manage customer organizations and invite administrator or customer accounts; customers work within their own organization.
+- **Supabase authentication:** invited users register with their own email address and password. Roles are assigned from the administrator-created invitation.
+- **Jobs and candidates:** create jobs, add candidate profiles and LinkedIn URLs, and attach a private PDF or Word CV (up to 5 MB).
+- **Recruitment pipeline:** compact five-stage Kanban and list views, candidate name and job filters, candidate profiles, and stage updates.
+- **Tenant isolation:** Supabase Row Level Security scopes customer data and private CV files by organization.
+- **Optional CV assistant:** with explicit consent, it produces an advisory summary, evidence, questions to clarify, and interview prompts. It does not score, rank, or recommend hiring decisions.
+
+The frontend and Supabase Edge Function are implemented in this repository. A public production deployment is not configured here. Live Supabase accounts need to register from an inbox they control, and the optional CV assistant needs an OpenAI API key and a deployed Edge Function.
+
+## Run locally
+
+Requirements: Node.js and npm.
 
 ```sh
 npm install
 npm run dev
 ```
 
-Without Supabase settings, Nexora runs in a browser-local demo mode with one platform administrator and one customer workspace. Sign in as `namn@admin.se` for the administrator view or `namn@kund.se` for the customer view. The demo accepts any password and stores demo changes in that browser only. Do not use demo mode for real candidate data.
+Without Supabase environment variables, the app uses browser-local demo data. Sign in as `namn@admin.se` for the administrator view or `namn@kund.se` for the customer view; local demo mode accepts any password. Changes stay in that browser. Do not use this mode for real candidate data.
 
-To open the local demo explicitly even when `.env.local` contains Supabase settings, run `npm run dev:demo`. Use `npm run dev` for the connected Supabase app.
+To force local demo mode even when `.env.local` contains Supabase settings:
 
-The sample customer is **Nexora**, the fictional recruiting company used by this demo. Candidate profiles, job records, and work histories are sample data; work histories do not name real employers. The `.se` addresses above are local demo identities. For a connected Supabase project, use email addresses whose inboxes you control so account confirmation and password recovery can reach the users.
+```sh
+npm run dev:demo
+```
+
+Use inboxes you control when creating Supabase accounts. The `.se` addresses above are demo identities and may not be deliverable email addresses.
 
 ## Connect Supabase
 
-1. Create a Supabase project and copy its Project URL and Publishable (anon) key into `.env.local`, using [.env.example](.env.example) as the template.
-2. In the Supabase SQL Editor, run [the migration](supabase/migrations/202610210001_initial_ats.sql) once to create tables, access policies, and the private CV bucket.
-3. For the two-role demo workspace, run [bootstrap-demo.sql](supabase/bootstrap-demo.sql). It creates the fictional Nexora organization, three sample jobs, six fictional candidates and applications, plus pending administrator/customer invitations. Replace the sample email addresses with inboxes you control before using Supabase email confirmation.
-4. Open Nexora, select **Skapa konto**, and register each invited email with a password chosen by that user. If email confirmation is enabled, follow the confirmation link before signing in.
-5. Administrators can add more customer organizations and invite customer or admin accounts from **Administration**. The auth trigger accepts only addresses with an administrator-created invitation.
-6. Set the Supabase Auth Site URL and redirect URLs to the deployed Nexora origin and `/inloggning`.
+1. Copy `.env.example` to `.env.local` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` to the project URL and public anon/publishable key. Never put a service-role key in the browser.
+2. Run [`supabase/migrations/202610210001_initial_ats.sql`](supabase/migrations/202610210001_initial_ats.sql) once in the Supabase SQL Editor. It creates the schema, access policies, signup trigger, and private CV bucket.
+3. Run [`supabase/bootstrap-demo.sql`](supabase/bootstrap-demo.sql) to create the fictional Nexora workspace, sample jobs and candidates, and pending admin/customer invitations. Change the sample emails to addresses whose inboxes you control before using email confirmation.
+4. Open the app, choose **Skapa konto**, and register each invited user with a password they choose. If email confirmation is enabled, follow the confirmation link before signing in.
+5. In Supabase Auth settings, set the Site URL and redirect URLs to the deployed app origin and `/inloggning`.
 
-The browser uses only the public key. Row Level Security scopes customer records by the trusted `profiles` row. Administrator invitations are consumed by a database trigger; roles never come from user-editable metadata. CVs live in a private `candidate-cvs` bucket, with paths scoped to the organization.
+For the schema and trust boundaries, see [`docs/architecture.md`](docs/architecture.md).
 
 ## Optional CV assistant
 
-The CV assistant creates an advisory summary, evidence points, missing information, and interview questions. It does not score or rank candidates, or recommend a hiring decision. A user must check the consent box before sending pasted CV text to OpenAI. The text is processed by the Supabase Edge Function and is not saved in the review record; only the result is saved.
+The CV assistant sends pasted CV text to OpenAI only after the user checks the consent box and starts the review. Raw CV text is not stored by the function; the generated advisory result is saved with the candidate's application. A person must verify every statement and make all hiring decisions.
 
-Deploy and configure the function:
+Deploy and configure the Supabase Edge Function:
 
 ```sh
 supabase functions deploy assess-cv
 supabase secrets set OPENAI_API_KEY=your-key
 ```
 
-`OPENAI_MODEL` is optional and defaults to `gpt-4.1-mini`. The assistant stays unavailable until its Edge Function and API key are configured.
-
-## Product scope and assumptions
-
-- An admin is a platform-wide operator. A customer is scoped to one organization by database policy.
-- One candidate is connected to one job in the current interface. Applications are stored separately so the data model can support multiple job applications later.
-- New customer organizations start empty. The Nexora demo workspace has synthetic starter records for walkthroughs; do not treat them as real candidates.
-- Candidate CV files are limited to 5 MB and PDF or Word format. AI review currently uses text the user pastes from a CV, so the UI can make the processing explicit.
-- The review is assistive only. A person must verify every statement and make all hiring decisions.
+`OPENAI_MODEL` is optional and defaults to `gpt-4.1-mini`. The assistant remains unavailable until the function and secret are configured.
 
 ## Build
 
 ```sh
 npm run build
 ```
+
+Vite writes the production assets to `dist/`. A hosting provider must serve that directory and rewrite client-side routes to `index.html`.

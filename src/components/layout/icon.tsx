@@ -4,8 +4,8 @@ export type IconName =
   | "people" | "briefcase" | "building" | "chevron-down" | "chevron-right"
   | "panel" | "logout" | "help" | "bell" | "close" | "plus" | "search"
   | "filter" | "grid" | "list" | "external" | "pin" | "mail" | "phone"
-  | "send" | "file" | "download" | "upload" | "check" | "history" | "user"
-  | "reset" | "shield" | "more" | "arrow-left" | "arrow-right" | "calendar" | "dots" | "sparkles" | "eye" | "eye-off";
+  | "send" | "file" | "download" | "upload" | "check"
+  | "reset" | "shield" | "more" | "arrow-left" | "arrow-right" | "sparkles" | "eye" | "eye-off";
 
 export function Icon({
   name,
@@ -91,12 +91,6 @@ export function Icon({
     case "check":
       shape = <path d="m5 12 4 4L19 6" />;
       break;
-    case "history":
-      shape = <><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5m4-1v5l3 2" /></>;
-      break;
-    case "user":
-      shape = <><circle cx="12" cy="8" r="4" /><path d="M4 21v-1a8 8 0 0 1 16 0v1" /></>;
-      break;
     case "reset":
       shape = <><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8" /><path d="M3 3v5h5" /></>;
       break;
@@ -111,12 +105,6 @@ export function Icon({
       break;
     case "arrow-right":
       shape = <path d="M5 12h14m-7-7 7 7-7 7" />;
-      break;
-    case "calendar":
-      shape = <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></>;
-      break;
-    case "dots":
-      shape = <><circle cx="12" cy="5" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="12" cy="19" r="1" /></>;
       break;
     case "sparkles":
       shape = <><path d="m12 3 1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3Z" /><path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z" /></>;

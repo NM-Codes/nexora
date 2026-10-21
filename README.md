@@ -27,7 +27,9 @@ npm run dev
 Without Supabase environment variables, the app uses browser-local demo data. Sign in with:
 
 - **Administrator:** Admin button
-- **Customer:** Kund butto
+- **Customer:** Kund button
+
+
 
 Changes stay in that browser. Do not use this mode for real candidate data.
 

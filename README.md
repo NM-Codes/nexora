@@ -24,15 +24,25 @@ npm install
 npm run dev
 ```
 
-Without Supabase environment variables, the app uses browser-local demo data. Sign in as `namn@admin.se` for the administrator view or `namn@kund.se` for the customer view; local demo mode accepts any password. Changes stay in that browser. Do not use this mode for real candidate data.
+Without Supabase environment variables, the app uses browser-local demo data. Sign in with:
 
-To force local demo mode even when `.env.local` contains Supabase settings:
+- ** Administrator:** admin
+- ** Customer:** kund
+- ** Password for both:** demo
+
+Customer: kund
+
+Password for both: demo
+
+Changes stay in that browser. Do not use this mode for real candidate data.
+
+To force local demo mode even when .env.local contains Supabase settings:
 
 ```sh
 npm run dev:demo
 ```
 
-Use inboxes you control when creating Supabase accounts. The `.se` addresses above are demo identities and may not be deliverable email addresses.
+For Supabase accounts, use an invited email address and the password chosen during registration. The demo email addresses are not real accounts.
 
 ## Connect Supabase
 
